@@ -15,11 +15,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 import guru.springframework.commands.RecipeCommand;
 import guru.springframework.domain.Recipe;
@@ -43,7 +41,8 @@ public class RecipeControllerTest {
 		MockitoAnnotations.initMocks(this);
 
 		controller = new RecipeController(recipeService);
-		mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+		mockMvc = MockMvcBuilders.standaloneSetup(controller).setControllerAdvice(new ControllerExceptionHandler())
+				.build();
 	}
 
 	@Test
@@ -67,7 +66,6 @@ public class RecipeControllerTest {
 	}
 
 	@Test
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public void testGetRecipeBadRequest() throws Exception {
 		mockMvc.perform(get("/recipe/asdf/show")).andExpect(status().isBadRequest()).andExpect(view().name("400error"));
 	}
@@ -87,7 +85,8 @@ public class RecipeControllerTest {
 		when(recipeService.saveRecipeCommand(any())).thenReturn(command);
 
 		mockMvc.perform(post("/recipe").contentType(MediaType.APPLICATION_FORM_URLENCODED).param("id", "")
-				.param("description", "some string")).andExpect(status().is3xxRedirection())
+				.param("description", "some string")
+				.param("directions", "some directions")).andExpect(status().is3xxRedirection())
 				.andExpect(view().name("redirect:/recipe/2/show"));
 	}
 
